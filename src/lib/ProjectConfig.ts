@@ -8,7 +8,7 @@ export interface ProjectConfig {
   projectName: string
   publishDir: string
   notFoundPath?: string
-  domains: DomainInfo[]
+  domains?: DomainInfo[]
   certificateArn?: string
 }
 
@@ -36,18 +36,20 @@ function validateConfig(obj: Partial<ProjectConfig>): ProjectConfig {
     throw new Error('config property "notFoundPath" must be a string')
   }
 
-  if (!obj.domains || !Array.isArray(obj.domains)) {
-    throw new Error('config property "domains" must exist and must be an array')
-  }
-
-  for (const domain of obj.domains) {
-    if (!domain.name) {
-      throw new Error('domain.name missing')
+  if (obj.domains) {
+    if (!Array.isArray(obj.domains)) {
+      throw new Error('config property "domains" must be an array')
     }
 
-    if (domain.dnsZoneName) {
-      if (typeof domain.dnsZoneName !== 'string') {
-        throw new Error('when present domain.dnsZoneName must be a string')
+    for (const domain of obj.domains) {
+      if (!domain.name) {
+        throw new Error('domain.name missing')
+      }
+
+      if (domain.dnsZoneName) {
+        if (typeof domain.dnsZoneName !== 'string') {
+          throw new Error('when present domain.dnsZoneName must be a string')
+        }
       }
     }
   }
@@ -73,7 +75,7 @@ function getStackPropsFromProject(projectPath: string, config: ProjectConfig): S
     stackName: config.projectName,
     publishDir: path.resolve(projectPath, config.publishDir),
     errorConfigurations,
-    domains: config.domains,
+    domains: config.domains || [],
     certificateArn: config.certificateArn,
   }
 }

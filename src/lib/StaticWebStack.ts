@@ -21,23 +21,27 @@ export class StaticWebStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: StaticWebStackProps) {
     super(scope, id, props)
 
-    const [primaryDomain, ...redirectDomains] = props.domains
+    const primaryDomain = props.domains[0] as DomainInfo | undefined
+    const redirectDomains = props.domains.slice(1)
 
     const hostedZoneLookup = new HostedZoneLookup(this, 'HostedZoneLookup')
-    let certificate: acm.ICertificate
-    if (props.certificateArn) {
-      certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCert', props.certificateArn)
-    } else {
-      const zones: Record<string, route53.IHostedZone> = {}
-      for (const d of props.domains) {
-        zones[d.name] = hostedZoneLookup.getHostedZone(d)
+    let certificate: acm.ICertificate | undefined
+
+    if (primaryDomain) {
+      if (props.certificateArn) {
+        certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCert', props.certificateArn)
+      } else {
+        const zones: Record<string, route53.IHostedZone> = {}
+        for (const d of props.domains) {
+          zones[d.name] = hostedZoneLookup.getHostedZone(d)
+        }
+        const [primaryName, ...otherNames] = props.domains.map((d) => d.name)
+        certificate = new acm.Certificate(this, 'GeneratedCert', {
+          domainName: primaryName,
+          subjectAlternativeNames: otherNames,
+          validation: acm.CertificateValidation.fromDnsMultiZone(zones),
+        })
       }
-      const [primaryName, ...otherNames] = props.domains.map((d) => d.name)
-      certificate = new acm.Certificate(this, 'GeneratedCert', {
-        domainName: primaryName,
-        subjectAlternativeNames: otherNames,
-        validation: acm.CertificateValidation.fromDnsMultiZone(zones),
-      })
     }
 
     const bucket = new s3.Bucket(this, 'Bucket', {
@@ -48,7 +52,7 @@ export class StaticWebStack extends cdk.Stack {
     })
 
     const webDistribution = new cloudfront.CloudFrontWebDistribution(this, 'WebDistribution', {
-      comment: primaryDomain.name,
+      comment: primaryDomain ? primaryDomain.name : 'aws-web-pub site',
       originConfigs: [
         {
           customOriginSource: {
@@ -62,17 +66,24 @@ export class StaticWebStack extends cdk.Stack {
           ],
         },
       ],
-      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        aliases: [primaryDomain.name],
-      }),
+      viewerCertificate:
+        certificate && primaryDomain
+          ? cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
+              aliases: [primaryDomain.name],
+            })
+          : undefined,
       errorConfigurations: props.errorConfigurations,
     })
 
-    new route53.ARecord(this, `ARecord-${primaryDomain.name}`, {
-      target: route53.RecordTarget.fromAlias(new route53targets.CloudFrontTarget(webDistribution)),
-      zone: hostedZoneLookup.getHostedZone(primaryDomain),
-      recordName: primaryDomain.name,
-    })
+    if (primaryDomain) {
+      new route53.ARecord(this, `ARecord-${primaryDomain.name}`, {
+        target: route53.RecordTarget.fromAlias(
+          new route53targets.CloudFrontTarget(webDistribution)
+        ),
+        zone: hostedZoneLookup.getHostedZone(primaryDomain),
+        recordName: primaryDomain.name,
+      })
+    }
 
     new s3deploy.BucketDeployment(this, 'BucketDeployment', {
       sources: [s3deploy.Source.asset(props.publishDir)],
@@ -82,18 +93,26 @@ export class StaticWebStack extends cdk.Stack {
       retainOnDelete: false,
     })
 
-    const domainWebRedirect = new DomainWebRedirect(this, `DomainRedirects`, {
-      sourceDomains: redirectDomains.map((domain) => {
-        return {
-          domainName: domain.name,
-          hostedZone: hostedZoneLookup.getHostedZone(domain),
-        }
-      }),
-      certificate: certificate,
-      targetDomain: primaryDomain.name,
-    })
+    let domainWebRedirect: DomainWebRedirect | undefined
+    if (primaryDomain) {
+      if (redirectDomains.length > 0 && certificate) {
+        domainWebRedirect = new DomainWebRedirect(this, `DomainRedirects`, {
+          sourceDomains: redirectDomains.map((domain) => {
+            return {
+              domainName: domain.name,
+              hostedZone: hostedZoneLookup.getHostedZone(domain),
+            }
+          }),
+          certificate: certificate,
+          targetDomain: primaryDomain.name,
+        })
+      }
+    }
 
-    const webDistributionList = [webDistribution, domainWebRedirect.webDistribution]
+    const webDistributionList = [webDistribution]
+    if (domainWebRedirect) {
+      webDistributionList.push(domainWebRedirect.webDistribution)
+    }
 
     new CfnOutput(this, 'BucketName', {
       value: bucket.bucketName,
@@ -116,7 +135,7 @@ export class StaticWebStack extends cdk.Stack {
     })
 
     new CfnOutput(this, 'Urls', {
-      value: `https://${primaryDomain.name}`,
+      value: primaryDomain ? `https://${primaryDomain.name}` : '',
     })
   }
 }
