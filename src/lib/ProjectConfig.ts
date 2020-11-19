@@ -75,7 +75,7 @@ function getStackPropsFromProject(projectPath: string, config: ProjectConfig): S
     stackName: config.projectName,
     publishDir: path.resolve(projectPath, config.publishDir),
     errorConfigurations,
-    domains: config.domains || [],
+    domains: config.domains,
     certificateArn: config.certificateArn,
   }
 }

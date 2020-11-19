@@ -9,6 +9,13 @@ export class HostedZoneLookup extends Construct {
     super(scope, id)
   }
 
+  getHostedZones(domains: DomainInfo[]): Record<string, route53.IHostedZone> {
+    return domains.reduce((acc, domain) => {
+      acc[domain.name] = this.getHostedZone(domain)
+      return acc
+    }, {} as Record<string, route53.IHostedZone>)
+  }
+
   getHostedZone(domain: DomainInfo): route53.IHostedZone {
     const name = this.getHostedZoneName(domain)
 

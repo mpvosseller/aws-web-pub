@@ -21,6 +21,7 @@
     "clean": "rm -rf dist/",
     "cdk": "cdk",
     "aws-web-pub": "ts-node src/bin/aws-web-pub.ts",
+    "aws-web-pub-js": "node dist/bin/aws-web-pub.js",
     "prepare": "yarn clean && yarn build",
     "prepublishOnly": "yarn lint:nofix"
   },

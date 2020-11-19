@@ -13,7 +13,7 @@ import { HostedZoneLookup } from './HostedZoneLookup'
 export interface StaticWebStackProps extends cdk.StackProps {
   publishDir: string
   errorConfigurations?: cloudfront.CfnDistribution.CustomErrorResponseProperty[]
-  domains: DomainInfo[]
+  domains?: DomainInfo[]
   certificateArn?: string
 }
 
@@ -21,24 +21,21 @@ export class StaticWebStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: StaticWebStackProps) {
     super(scope, id, props)
 
-    const primaryDomain = props.domains[0] as DomainInfo | undefined
-    const redirectDomains = props.domains.slice(1)
+    const domains = props.domains ?? []
+    const primaryDomain = domains[0] as DomainInfo | undefined
+    const redirectDomains = domains.slice(1)
 
     const hostedZoneLookup = new HostedZoneLookup(this, 'HostedZoneLookup')
-    let certificate: acm.ICertificate | undefined
 
+    let certificate: acm.ICertificate | undefined
     if (primaryDomain) {
       if (props.certificateArn) {
         certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCert', props.certificateArn)
       } else {
-        const zones: Record<string, route53.IHostedZone> = {}
-        for (const d of props.domains) {
-          zones[d.name] = hostedZoneLookup.getHostedZone(d)
-        }
-        const [primaryName, ...otherNames] = props.domains.map((d) => d.name)
+        const zones = hostedZoneLookup.getHostedZones(domains)
         certificate = new acm.Certificate(this, 'GeneratedCert', {
-          domainName: primaryName,
-          subjectAlternativeNames: otherNames,
+          domainName: primaryDomain.name,
+          subjectAlternativeNames: redirectDomains.map((d) => d.name),
           validation: acm.CertificateValidation.fromDnsMultiZone(zones),
         })
       }
@@ -52,7 +49,7 @@ export class StaticWebStack extends cdk.Stack {
     })
 
     const webDistribution = new cloudfront.CloudFrontWebDistribution(this, 'WebDistribution', {
-      comment: primaryDomain ? primaryDomain.name : 'aws-web-pub site',
+      comment: primaryDomain?.name || 'aws-web-pub site',
       originConfigs: [
         {
           customOriginSource: {

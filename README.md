@@ -72,7 +72,7 @@ in about 1 minute.
 
 ## Additional Notes
 
-- This tool generates temporary files in a directory called `cdk.out`. You should add this to `.gitignore`
+- This tool generates temporary files in a directory called `aws-web-pub.out`. You should add this to `.gitignore`
 - Due to [CloudFront limitations](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-viewercertificate.html#cfn-cloudfront-distribution-viewercertificate-acmcertificatearn) the website will always be hosted in the `us-east-1` AWS region.
 - If you using [AWS named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you can pass a `--profile` option
 - By default AWS Accounts can generate just 20 ACM certficates per year. When you publish a site without specifying a `certificateArn` a new certificate is generated and when you unpublish the site it is deleted. If you plan on publishing and unpublishing frequently you should generate a certficate manually and set the `certificateArn` configuration property.

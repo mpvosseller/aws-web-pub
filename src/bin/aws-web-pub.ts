@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process'
+import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 
@@ -45,29 +46,49 @@ function execCdk(
   args: string[],
   { projectDir, profile }: { projectDir: string; profile?: string }
 ): void {
-  const packageRootDir = path.resolve(__dirname, '../../') // two directories up from this file
-  const outputDir = path.resolve(process.cwd(), 'cdk.out')
   projectDir = path.resolve(projectDir)
+  const buildDir = path.resolve(projectDir, 'aws-web-pub.out')
+  const cdkOutputDir = path.resolve(buildDir, 'cdk.out')
+  const appPath = require.resolve('../lib/AwsWebPubApp')
 
+  const cdkArgs: string[] = []
+
+  // --profile
   if (profile) {
-    args = ['--profile', profile, ...args]
+    cdkArgs.push('--profile', profile)
   }
 
-  // hack to allow running with ts-node in development
-  if (__filename.endsWith('.ts')) {
-    args = ['--app', 'ts-node src/lib/AwsWebPubApp.ts', ...args]
+  // --output
+  cdkArgs.push('--output', cdkOutputDir)
+
+  // --context
+  const context = {
+    '@aws-cdk/core:enableStackNameDuplicates': 'true',
+    'aws-cdk:enableDiffNoFail': 'true',
+    '@aws-cdk/core:stackRelativeExports': 'true',
+    project: projectDir,
+  }
+  for (const [key, value] of Object.entries(context)) {
+    cdkArgs.push('--context', `${key}=${value}`)
   }
 
-  const cdkProcess = spawnSync(
-    'npx',
-    ['--no-install', 'cdk', '--output', outputDir, '-c', `project=${projectDir}`, ...args],
-    {
-      cwd: packageRootDir,
-      stdio: 'inherit',
-    }
-  )
+  // --app
+  const isTsNode = __filename.endsWith('.ts')
+  const nodeCmd = isTsNode ? `ts-node --dir ${process.cwd()}` : 'node'
+  cdkArgs.push('--app', `${nodeCmd} ${appPath}`)
 
-  if (cdkProcess.error) {
-    throw cdkProcess.error
+  // rest of the args
+  cdkArgs.push(...args)
+
+  if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir)
+  }
+  const cdkProcess = spawnSync('npx', ['--no-install', 'cdk', ...cdkArgs], {
+    cwd: buildDir,
+    stdio: 'inherit',
+  })
+
+  if (cdkProcess.status !== 0) {
+    throw new Error(`CDK failed with status: ${cdkProcess.status}`)
   }
 }
