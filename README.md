@@ -57,6 +57,7 @@ each subsequent update completes in under a minute.
   "projectName": "example-site",
   "publishDir": "dist",
   "notFoundPath": "/404.html",
+  "isSinglePageApp": false,
   "domains": [
     {
       "name": "www.example.com"
@@ -72,7 +73,8 @@ each subsequent update completes in under a minute.
 
 - `projectName` uniquely identifies a project within an AWS account. If you try to deploy more than one site with the same `projectName` they will overwrite each other.
 - `publishDir` is a path to the directory of web assets to publish. This should be relative to the configuration file.
-- `notFoundPath` is optional and identifies an html file to use for the content of 404 responses. This should be relative to `publishDir` and prefixed with a `/`
+- `notFoundPath` is optional and identifies an html file to use for the content of 404 responses. This should be relative to `publishDir` and prefixed with a `/`.
+- `isSinglePageApp` is optional and when set to `true` it optimizes the configuration for single page applications. In this mode `404` errors are converted to `200` and return the root document. When this is enabled the `notFoundPath` property is ignored.
 - `domains` is an optional array and describes custom domains to use. The first entry will be the primary domain and any subsequent entries will be configured to redirect to the primary.
 
   - `name` is the domain name

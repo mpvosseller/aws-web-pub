@@ -8,6 +8,7 @@ export interface ProjectConfig {
   projectName: string
   publishDir: string
   notFoundPath?: string
+  isSinglePageApp?: boolean
   domains?: DomainInfo[]
   certificateArn?: string
 }
@@ -34,6 +35,10 @@ function validateConfig(obj: Partial<ProjectConfig>): ProjectConfig {
 
   if (obj.notFoundPath && typeof obj.notFoundPath !== 'string') {
     throw new Error('config property "notFoundPath" must be a string')
+  }
+
+  if (typeof obj.isSinglePageApp !== 'undefined' && typeof obj.isSinglePageApp !== 'boolean') {
+    throw new Error('config property "isSinglePageApp" must be a boolean')
   }
 
   if (obj.domains) {
@@ -63,7 +68,29 @@ function validateConfig(obj: Partial<ProjectConfig>): ProjectConfig {
 
 function getStackPropsFromProject(projectPath: string, config: ProjectConfig): StaticWebStackProps {
   const errorConfigurations: cloudfront.CfnDistribution.CustomErrorResponseProperty[] = []
-  if (config.notFoundPath) {
+
+  if (config.isSinglePageApp) {
+    errorConfigurations.push(
+      {
+        errorCode: 400,
+        responseCode: 200,
+        responsePagePath: '/',
+        errorCachingMinTtl: 300,
+      },
+      {
+        errorCode: 403,
+        responseCode: 200,
+        responsePagePath: '/',
+        errorCachingMinTtl: 300,
+      },
+      {
+        errorCode: 404,
+        responseCode: 200,
+        responsePagePath: '/',
+        errorCachingMinTtl: 300,
+      }
+    )
+  } else if (config.notFoundPath) {
     errorConfigurations.push({
       errorCode: 404,
       responseCode: 404,
