@@ -12,6 +12,7 @@ import { HostedZoneLookup } from './HostedZoneLookup'
 
 export interface StaticWebStackProps extends cdk.StackProps {
   publishDir: string
+  deleteOldFiles?: boolean
   errorConfigurations?: cloudfront.CfnDistribution.CustomErrorResponseProperty[]
   domains?: DomainInfo[]
   certificateArn?: string
@@ -88,6 +89,7 @@ export class StaticWebStack extends cdk.Stack {
       distribution: webDistribution,
       distributionPaths: ['/*'],
       retainOnDelete: false,
+      prune: props.deleteOldFiles,
     })
 
     let domainWebRedirect: DomainWebRedirect | undefined

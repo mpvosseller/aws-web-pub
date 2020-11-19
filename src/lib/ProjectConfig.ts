@@ -7,6 +7,7 @@ import { StaticWebStackProps } from './StaticWebStack'
 export interface ProjectConfig {
   projectName: string
   publishDir: string
+  deleteOldFiles?: boolean
   notFoundPath?: string
   isSinglePageApp?: boolean
   domains?: DomainInfo[]
@@ -35,6 +36,10 @@ function validateConfig(obj: Partial<ProjectConfig>): ProjectConfig {
 
   if (obj.notFoundPath && typeof obj.notFoundPath !== 'string') {
     throw new Error('config property "notFoundPath" must be a string')
+  }
+
+  if (typeof obj.deleteOldFiles !== 'undefined' && typeof obj.deleteOldFiles !== 'boolean') {
+    throw new Error('config property "deleteOldFiles" must be a boolean')
   }
 
   if (typeof obj.isSinglePageApp !== 'undefined' && typeof obj.isSinglePageApp !== 'boolean') {
@@ -101,6 +106,7 @@ function getStackPropsFromProject(projectPath: string, config: ProjectConfig): S
   return {
     stackName: config.projectName,
     publishDir: path.resolve(projectPath, config.publishDir),
+    deleteOldFiles: config.deleteOldFiles,
     errorConfigurations,
     domains: config.domains,
     certificateArn: config.certificateArn,
