@@ -3,13 +3,22 @@
 A CLI tool to easily publish a static website to AWS.
 
 With one simple command this tool provisions all of the AWS resources required
-to host your static website with a custom domain. It even generates a valid
-SSL/TLS certificate for you. The first deployment takes about 10 minutes but
-each subsequent update completes in under a minute.
+to host your static website with a custom domain. The initial deployment takes
+about 10 minutes but site updates usually complete in under a minute.
+
+## Noteworthy Features
+
+- Deploys a static website to AWS with one simple command
+- Automatically provisions and configures all AWS resources required to host your website
+- Supports automatically generating a valid SSL/TLS certificate for your domain(s)
+- Supports an optimized configuration for single-page applications
+- Supports redirecting secondary domains to your primary domain. This allows redirecting to or from the APEX (naked) domain (e.g. `https://example.com` -> `https://www.example.com`)
+- Redirects all `http` requests to `https`
+- Tear down your website and delete the AWS resources with a single command
 
 ## Prerequisites
 
-- Your domain is managed by [AWS Route 53](https://aws.amazon.com/route53)
+- Your domain(s) is managed by [AWS Route 53](https://aws.amazon.com/route53)
 
 - Your AWS credentials are configured with the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
   OR you have following [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html#envvars-set) set to appropriate values:
@@ -48,7 +57,7 @@ each subsequent update completes in under a minute.
 
 - Deploy your site with `npm run deploy`
 
-- Tear down your site (and delete all the provisioned AWS resources) with `npm run destroy`
+- Tear down your site (and delete the AWS resources) with `npm run destroy`
 
 ## Configuration File
 
@@ -75,18 +84,18 @@ each subsequent update completes in under a minute.
 - `projectName` uniquely identifies a project within an AWS account. If you try to deploy more than one site with the same `projectName` they will overwrite each other.
 - `publishDir` is a path to the directory of web assets to publish. This should be relative to the configuration file.
 - `deleteOldFiles` is optional and indicates whether old files (files that are in the S3 bucket but not in `publishDir`) should be deleted. This defaults to `true`.
-- `notFoundPath` is optional and identifies an html file to use for the content of 404 responses. This should be relative to `publishDir` and prefixed with a `/`.
+- `notFoundPath` is optional and identifies an html file to use for the content of 404 responses. This should be relative to `publishDir` and prefixed with a `/`. This property is ignored when `isSinglePageApp` is set to `true`.
 - `isSinglePageApp` is optional and when set to `true` it optimizes the configuration for single page applications. In this mode `404` errors are converted to `200` and return the root document. When this is enabled the `notFoundPath` property is ignored.
-- `domains` is an optional array and describes custom domains to use. The first entry will be the primary domain and any subsequent entries will be configured to redirect to the primary.
+- `domains` is an optional array and describes custom domains to use. The first entry will be the primary domain and any subsequent entries will be configured to redirect to the primary. If this property is not set you can still access the site via a CloudFront URL.
 
   - `name` is the domain name
-  - `dnsZoneName` is optional and identifies the Route 53 HostedZone that manages this domain. When `dnsZoneName` is not provided it defaults to the parent domain (e.g. the domain name `www.example.com` defaults to using `example.com` as the `dnsZoneName`). This is typically used to support the APEX / naked domain by setting `name` and `dnsZoneName` to the same value. In the example configuration above the APEX domain https://example.com would redirect to the primary domain https://www.example.com
+  - `dnsZoneName` is optional and identifies the Route 53 HostedZone that manages this domain. When `dnsZoneName` is not provided it defaults to the parent domain (e.g. the domain name `www.example.com` defaults to using `example.com` as the `dnsZoneName`). This is typically used to support the APEX / naked domain by setting `name` and `dnsZoneName` to the same value. In the example configuration above the APEX domain `https://example.com` would redirect to the primary domain `https://www.example.com`
 
-- `certificateArn` is optional and specifies the ARN of an AWS ACM certificate to use. This certificate must be valid for every domain in the `domains` setting. If present we use this certificate instead of generating a new one (See Additional Notes below regarding certificate limits).
+- `certificateArn` is optional and specifies the ARN of an AWS ACM certificate to use. This certificate must be valid for every domain in the `domains` setting. If present we use this certificate instead of generating a new one (See [Additional Notes](#additional-notes) below regarding AWS certificate limits).
 
 ## Additional Notes
 
 - This tool generates temporary files in a directory called `aws-web-pub.out`. You should add this to `.gitignore`
 - Due to [CloudFront limitations](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-viewercertificate.html#cfn-cloudfront-distribution-viewercertificate-acmcertificatearn) the website will always be hosted in the `us-east-1` AWS region.
 - If you using [AWS named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you can pass a `--profile` option
-- By default AWS Accounts can generate just 20 ACM certficates per year. If you plan on destroying sites frequently you should use the `certificateArn` to prevent hitting this limit. You can also ask AWS support to increase your [ACM "Imported certificates in last 365 days"](https://console.aws.amazon.com/servicequotas/home?#!/services/acm/quotas/L-3808DC70) quota limit.
+- By default most AWS Accounts can generate just 20 ACM certficates per year. If you plan on destroying sites frequently you should [manually generate a certificate](https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html) and use the `certificateArn` to prevent hitting this limit. Alternatively you can also ask AWS support to increase your [ACM "Imported certificates in last 365 days"](https://console.aws.amazon.com/servicequotas/home?#!/services/acm/quotas/L-3808DC70) quota limit.
