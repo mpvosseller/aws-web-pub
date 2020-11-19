@@ -13,8 +13,8 @@ yargs
     description: 'Use the indicated AWS profile as the default environment',
   })
   .command(
-    'publish [projectDir]',
-    'Publish site',
+    ['deploy [projectDir]', 'publish'],
+    'Publish website',
     (builder) =>
       builder.positional('projectDir', {
         type: 'string',
@@ -27,8 +27,8 @@ yargs
     }
   )
   .command(
-    'unpublish [projectDir]',
-    'Unpublish site',
+    ['destroy [projectDir]', 'unpublish'],
+    'Unpublish website',
     (builder) =>
       builder.positional('projectDir', {
         type: 'string',
