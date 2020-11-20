@@ -1,6 +1,6 @@
 # aws-web-pub
 
-A CLI tool to easily publish a static website to AWS.
+Publish a static website to AWS with one simple command.
 
 With one simple command this tool provisions all of the AWS resources required
 to host your static website with a custom domain. The initial deployment takes
@@ -95,5 +95,5 @@ about 10 minutes but site updates usually complete in just a few minutes.
 
 - This tool generates temporary files in a directory called `aws-web-pub.out`. You should add this to `.gitignore`
 - Due to [CloudFront limitations](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-viewercertificate.html#cfn-cloudfront-distribution-viewercertificate-acmcertificatearn) the website will always be hosted in the `us-east-1` AWS region.
-- If you using [AWS named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you can pass a `--profile` option
+- If you are using [AWS named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you can pass a `--profile` option
 - By default most AWS Accounts can generate just 20 ACM certficates per year. If you plan on destroying sites frequently you should [manually generate a certificate](https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html) and use the `certificateArn` to prevent hitting this limit. Alternatively you can also ask AWS support to increase your [ACM "Imported certificates in last 365 days"](https://console.aws.amazon.com/servicequotas/home?#!/services/acm/quotas/L-3808DC70) quota limit.
