@@ -4,17 +4,15 @@ A CLI tool to easily publish a static website to AWS.
 
 With one simple command this tool provisions all of the AWS resources required
 to host your static website with a custom domain. The initial deployment takes
-about 10 minutes but site updates usually complete in under a minute.
+about 10 minutes but site updates usually complete in just a few minutes.
 
 ## Noteworthy Features
 
-- Deploys a static website to AWS with one simple command
-- Automatically provisions and configures all AWS resources required to host your website
-- Supports automatically generating a valid SSL/TLS certificate for your domain(s)
-- Supports an optimized configuration for single-page applications
-- Supports redirecting secondary domains to your primary domain. This allows redirecting to or from the APEX (naked) domain (e.g. `https://example.com` -> `https://www.example.com`)
+- Automatically generates an SSL/TLS certificate for your domain
+- Supports traditional websites and single-page applications
+- Supports redirecting to or from the APEX (naked) domain (e.g. have `https://example.com` redirect to `https://www.example.com` or vice versa)
 - Redirects all `http` requests to `https`
-- Tear down your website and delete the AWS resources with a single command
+- Tear down your website and delete all AWS resources with one command
 
 ## Prerequisites
 
@@ -59,7 +57,7 @@ about 10 minutes but site updates usually complete in under a minute.
 
 - Tear down your site (and delete the AWS resources) with `npm run destroy`
 
-## Configuration File
+## Configuration File Options
 
 ```json
 {

@@ -4,12 +4,28 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mpvosseller/aws-web-pub"
+    "url": "git+https://github.com/mpvosseller/aws-web-pub.git"
   },
   "bin": {
     "aws-web-pub": "dist/bin/aws-web-pub.js"
   },
   "main": "dist/index.js",
+  "keywords": [
+    "host",
+    "static",
+    "website",
+    "s3",
+    "cloudfront",
+    "cdk",
+    "construct",
+    "site",
+    "app",
+    "webapp",
+    "spa",
+    "react",
+    "vue",
+    "spa"
+  ],
   "files": [
     "dist/",
     "cdk.json"
