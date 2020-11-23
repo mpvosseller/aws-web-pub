@@ -1,0 +1,2 @@
+- Run internally like: `yarn aws-web-pub deploy <dir>` or `yarn aws-web-pub destroy <dir>`
+- Publish to npm with `yarn publish`
