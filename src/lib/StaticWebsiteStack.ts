@@ -6,11 +6,11 @@ import * as s3 from '@aws-cdk/aws-s3'
 import * as s3deploy from '@aws-cdk/aws-s3-deployment'
 import * as cdk from '@aws-cdk/core'
 import { CfnOutput, RemovalPolicy } from '@aws-cdk/core'
+import { DomainWebRedirect } from 'domain-web-redirect'
 import { DomainInfo } from './DomainInfo'
-import { DomainWebRedirect } from './DomainWebRedirect'
 import { HostedZoneLookup } from './HostedZoneLookup'
 
-export interface StaticWebStackProps extends cdk.StackProps {
+export interface StaticWebsiteStackProps extends cdk.StackProps {
   publishDir: string
   deleteOldFiles?: boolean
   errorConfigurations?: cloudfront.CfnDistribution.CustomErrorResponseProperty[]
@@ -18,8 +18,8 @@ export interface StaticWebStackProps extends cdk.StackProps {
   certificateArn?: string
 }
 
-export class StaticWebStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props: StaticWebStackProps) {
+export class StaticWebsiteStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props: StaticWebsiteStackProps) {
     super(scope, id, props)
 
     const domains = props.domains ?? []

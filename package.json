@@ -38,8 +38,7 @@
     "cdk": "cdk",
     "aws-web-pub": "ts-node src/bin/aws-web-pub.ts",
     "aws-web-pub-js": "node dist/bin/aws-web-pub.js",
-    "prepare": "yarn clean && yarn build",
-    "prepublishOnly": "yarn lint:nofix"
+    "prepublishOnly": "yarn clean && yarn lint:nofix && yarn build"
   },
   "devDependencies": {
     "@types/node": "14.14.6",
@@ -65,6 +64,7 @@
     "@aws-cdk/aws-s3-deployment": "^1.70.0",
     "@aws-cdk/core": "^1.70.0",
     "aws-cdk": "^1.70.0",
+    "domain-web-redirect": "^1.0.1",
     "source-map-support": "^0.5.16",
     "yargs": "^16.1.0"
   }

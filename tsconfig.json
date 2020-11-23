@@ -6,7 +6,6 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "strict": true,
-    "allowJs": true,
     "module": "commonjs",
     "esModuleInterop": true
   },

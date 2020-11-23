@@ -79,7 +79,7 @@ about 10 minutes but site updates usually complete in just a few minutes.
 }
 ```
 
-- `projectName` uniquely identifies a project within an AWS account. If you try to deploy more than one site with the same `projectName` they will overwrite each other.
+- `projectName` uniquely identifies a project within an AWS account. It must start with an alphabetic character (ASCII) and can't be longer than 128 characters. If you try to deploy more than one site with the same `projectName` they will overwrite each other. Note that internally all non-alphanumeric characters are converted to hyphens so projects with names `my project` and `my-project` are considered identical and would overwrite each other.
 - `publishDir` is a path to the directory of web assets to publish. This should be relative to the configuration file.
 - `deleteOldFiles` is optional and indicates whether old files (files that are in the S3 bucket but not in `publishDir`) should be deleted. This defaults to `true`.
 - `notFoundPath` is optional and identifies an html file to use for the content of 404 responses. This should be relative to `publishDir` and prefixed with a `/`. This property is ignored when `isSinglePageApp` is set to `true`.

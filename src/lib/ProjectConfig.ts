@@ -2,7 +2,7 @@ import * as cloudfront from '@aws-cdk/aws-cloudfront'
 import fs from 'fs'
 import path from 'path'
 import { DomainInfo } from './DomainInfo'
-import { StaticWebStackProps } from './StaticWebStack'
+import { StaticWebsiteStackProps } from './StaticWebsiteStack'
 
 export interface ProjectConfig {
   projectName: string
@@ -14,7 +14,7 @@ export interface ProjectConfig {
   certificateArn?: string
 }
 
-export function getStackProps(projectPath: string): StaticWebStackProps {
+export function getStackProps(projectPath: string): StaticWebsiteStackProps {
   const config = getProjectConfig(projectPath)
   return getStackPropsFromProject(projectPath, config)
 }
@@ -71,7 +71,10 @@ function validateConfig(obj: Partial<ProjectConfig>): ProjectConfig {
   return obj as ProjectConfig
 }
 
-function getStackPropsFromProject(projectPath: string, config: ProjectConfig): StaticWebStackProps {
+function getStackPropsFromProject(
+  projectPath: string,
+  config: ProjectConfig
+): StaticWebsiteStackProps {
   const errorConfigurations: cloudfront.CfnDistribution.CustomErrorResponseProperty[] = []
 
   if (config.isSinglePageApp) {
@@ -104,7 +107,7 @@ function getStackPropsFromProject(projectPath: string, config: ProjectConfig): S
   }
 
   return {
-    stackName: config.projectName,
+    stackName: config.projectName.replace(/[^a-zA-Z0-9]/g, '-'),
     publishDir: path.resolve(projectPath, config.publishDir),
     deleteOldFiles: config.deleteOldFiles,
     errorConfigurations,
