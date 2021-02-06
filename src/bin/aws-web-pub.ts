@@ -66,6 +66,9 @@ function execCdk(
     '@aws-cdk/core:enableStackNameDuplicates': 'true',
     'aws-cdk:enableDiffNoFail': 'true',
     '@aws-cdk/core:stackRelativeExports': 'true',
+    '@aws-cdk/aws-ecr-assets:dockerIgnoreSupport': true,
+    '@aws-cdk/aws-secretsmanager:parseOwnedSecretName': true,
+    '@aws-cdk/aws-kms:defaultKeyPolicies': true,
     project: projectDir,
   }
   for (const [key, value] of Object.entries(context)) {
@@ -75,7 +78,7 @@ function execCdk(
   // --app
   const isTsNode = __filename.endsWith('.ts')
   const nodeCmd = isTsNode ? `ts-node --dir ${process.cwd()}` : 'node'
-  cdkArgs.push('--app', `${nodeCmd} ${appPath}`)
+  cdkArgs.push('--app', `"${nodeCmd} ${appPath}"`)
 
   // rest of the args
   cdkArgs.push(...args)
